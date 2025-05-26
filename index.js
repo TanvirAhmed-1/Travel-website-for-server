@@ -29,6 +29,32 @@ async function run() {
 
 const userCollection = client.db("travelDB") .collection("userDB");
 const dataCollection = client.db("travelDB") .collection("dataDB")
+const WishlistCollection = client.db("travelDB") .collection("wishlist")
+
+
+// wishlist api
+
+app.post("/wish", async(req,res)=>{
+  const data=req.body
+  const result=await WishlistCollection.insertOne(data)
+  res.send(result)
+})
+
+//get wishlist
+
+app.get("/wish",async (req,res)=>{
+  const data=req.query.email
+  const query={
+    email:data
+  }
+  const result=await WishlistCollection.find(query).toArray()
+  res.send(result)
+})
+
+
+
+
+
 
 //  usermanagement api---------------------------------------------
 app.post("/users",async(req,res)=>{
