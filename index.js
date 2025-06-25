@@ -177,6 +177,21 @@ async function run() {
       res.send(result);
     });
 
+    //admin home page 
+
+    app.get("/admin/home",async(req,res,)=>{
+      const totalUser=await userCollection.countDocuments()
+      const totalTourPackage=await dataCollection.countDocuments()
+      const totalWishList=await dataCollection.countDocuments()
+      const totalBookList=await dataCollection.countDocuments()
+      res.send({
+        user:totalUser,
+        torPackage:totalTourPackage,
+        wish:totalWishList,
+        booked:totalBookList,
+      })
+    })
+
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
