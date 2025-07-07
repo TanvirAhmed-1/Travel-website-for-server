@@ -1,16 +1,17 @@
+require("dotenv").config();
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middlewares
 app.use(express.json());
 app.use(cors());
-require("dotenv").config();
 
-const uri = `mongodb+srv://${process.env.DB_User}:${process.env.DB_PASS}@cluster0.464po.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+// const uri = `mongodb+srv://${process.env.DB_User1}:${process.env.DB_PASS2}@cluster0.0p516.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+const uri = `mongodb+srv://TravelBD:NXif9PhaM46u96VV@cluster0.0p516.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -23,10 +24,11 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    const userCollection = client.db("travelDB").collection("userDB");
-    const dataCollection = client.db("travelDB").collection("dataDB");
-    const WishlistCollection = client.db("travelDB").collection("wishlist");
-    const BookCollection = client.db("travelDB").collection("Books");
+    const userCollection = client.db("TravelBD").collection("userDB");
+    const dataCollection = client.db("TravelBD").collection("dataDB");
+    const WishlistCollection = client.db("TravelBD").collection("wishlist");
+    const BookCollection = client.db("TravelBD").collection("Books");
+    const GuideCollection = client.db("TravelBD").collection("Guide");
 
     // books
 
@@ -44,8 +46,8 @@ async function run() {
     app.patch("/book/:id", async (req, res) => {
       const id = req.params.id;
       const data = req.body;
-      console.log(id,data)
-      const filter = {_id: new ObjectId(id) };
+      console.log(id, data);
+      const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: data,
       };
@@ -116,45 +118,63 @@ async function run() {
       res.send(result);
     });
 
-    // //  usermanagement api---------------------------------------------
-    // app.post("/users",async(req,res)=>{
-    //   const users = req.body;
-    //   const result = await userCollection.insertOne(users);
-    //   res.send(result)
+    // Guide section
 
-    // })
+    app.post("/guides", async (req, res) => {
+      try {
+        const data = req.body;
+        const result = await GuideCollection.insertOne(data);
+        res.send(result);
+      } catch (error) {
+        res.send({ error: error.message });
+      }
+    });
 
-    // app.get("/users",async(req,res)=>{
+    app.get("/guides", async (req, res) => {
+      try {
+        const result = await GuideCollection.find().toArray();
+        res.send(result);
+      } catch (error) {
+        res.send({ error: error.message });
+      }
+    });
 
-    //   const cursor = userCollection.find()
-    //   const result= await cursor.toArray()
-    //   res.send(result)
-    // })
+    app.get("/guides/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const result = await GuideCollection.findOne(filter);
+        res.send(result);
+      } catch (error) {
+        res.send({ error: error.message });
+      }
+    });
 
-    // app.get("/users/:id",async(req,res)=>{
-    //   const id = req.params.id;
-    //   const query ={_id: new ObjectId(id)}
-    //   const result = await userCollection.findOne(query)
-    //   res.send(result);
-    // })
+    app.delete("/guides/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const result = await GuideCollection.deleteOne(filter);
+        res.send(result);
+      } catch (error) {
+        res.send({ error: error.message });
+      }
+    });
 
-    // app.put("/users/:id",async(req,res)=>{
-    //   const id = req.params.id;
-    //   const filter = {_id: new ObjectId(id)};
-    //   const user = req.body
-    //   console.log(user)
-    //   const updateDoc ={
-    //     $set:{
-    //           name: user.name,
-    //           email: user.email
-    //     }
-    //   }
-    //   const options = {upsert:true}
-    //   const result = await userCollection.updateOne(filter,updateDoc,options)
-    //   res.send(result)
-    // })
-
-    // --------------------------------------------------
+    app.patch("/guides/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const data = req.body;
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+          $set: data,
+        };
+        const result = await GuideCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } catch (error) {
+        res.send({ error: error.message });
+      }
+    });
 
     // Data API------------------------------------------
 
@@ -165,32 +185,58 @@ async function run() {
     });
 
     app.get("/addData", async (req, res) => {
-      const cursor = dataCollection.find();
-      const result = await cursor.toArray();
+      const result = await dataCollection.find().toArray();
       res.send(result);
     });
 
     app.get("/addData/:id", async (req, res) => {
       const id = req.params.id;
-      const qurey = { _id: new ObjectId(id) };
-      const result = await dataCollection.findOne(qurey);
+      const query = { _id: new ObjectId(id) };
+      const result = await dataCollection.findOne(query);
       res.send(result);
     });
 
-    //admin home page 
+    app.delete("/addData/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await dataCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        res.send({ error: error.message });
+      }
+    });
 
-    app.get("/admin/home",async(req,res,)=>{
-      const totalUser=await userCollection.countDocuments()
-      const totalTourPackage=await dataCollection.countDocuments()
-      const totalWishList=await dataCollection.countDocuments()
-      const totalBookList=await dataCollection.countDocuments()
+    app.patch("/addData/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const data = req.body;
+        console.log(data, id);
+        const filter = { _id: new ObjectId(id) };
+        const UpdateDoc = {
+          $set: data,
+        };
+        const result = await dataCollection.updateOne(filter, UpdateDoc);
+        res.send(result);
+        console.log("Update result:", result);
+      } catch (error) {
+        res.send({ error: error.message });
+      }
+    });
+    //admin home page
+
+    app.get("/admin/home", async (req, res) => {
+      const totalUser = await userCollection.countDocuments();
+      const totalTourPackage = await dataCollection.countDocuments();
+      const totalWishList = await dataCollection.countDocuments();
+      const totalBookList = await dataCollection.countDocuments();
       res.send({
-        user:totalUser,
-        torPackage:totalTourPackage,
-        wish:totalWishList,
-        booked:totalBookList,
-      })
-    })
+        user: totalUser,
+        torPackage: totalTourPackage,
+        wish: totalWishList,
+        booked: totalBookList,
+      });
+    });
 
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
