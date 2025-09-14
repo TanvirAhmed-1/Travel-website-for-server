@@ -2,16 +2,25 @@ require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middlewares
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
-const uri = `mongodb+srv://${process.env.DB_User1}:${process.env.DB_PASS2}@cluster0.0p516.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+// Cookie handle
+app.use(cookieParser());
 
-// const uri = `mongodb+srv://TravelBD:NXif9PhaM46u96VV@cluster0.0p516.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+//const uri = `mongodb+srv://${process.env.DB_User1}:${process.env.DB_PASS2}@cluster0.0p516.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+const uri = `mongodb+srv://TravelBD:NXif9PhaM46u96VV@cluster0.0p516.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -65,15 +74,32 @@ async function run() {
     //user section
 
     app.post("/users", async (req, res) => {
-      const users = req.body;
       const user = req.body;
       const email = user.email;
 
+      // আগে চেক করো ইউজার আছে কিনা
       const existingUser = await userCollection.findOne({ email });
       if (existingUser) {
-        res.send("User AllReady Added");
+        return res.send("User already added");
       }
-      const result = await userCollection.insertOne(users);
+
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      const newUser = { ...user, role: "user" };
+
+      // database এ insert
+      const result = await userCollection.insertOne(newUser);
+
+      res.cookie("role", newUser.role, {
+        httpOnly: true,
+        // secure: true,
+        secure: process.env.NODE_ENV === "production",
+        //sameSite: "strict",
+        sameSite: "lax",
+      });
+
       res.send(result);
     });
 
