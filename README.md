@@ -40,8 +40,6 @@ Create a .env file in the root directory and configure your environment variable
 
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
-Start the server:
-
-bash
+Start the server
 কোড কপি করুন
 npm start
